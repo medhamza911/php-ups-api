@@ -11,8 +11,8 @@ use stdClass;
 
 abstract class Ups implements LoggerAwareInterface
 {
-    const PRODUCTION_BASE_URL = 'https://onlinetools.ups.com/ups.app/xml';
-    const INTEGRATION_BASE_URL = 'https://wwwcie.ups.com/ups.app/xml';
+    const PRODUCTION_BASE_URL = 'https://onlinetools.ups.com/api/ups.app/xml';
+    const INTEGRATION_BASE_URL = 'https://wwwcie.ups.com/api/ups.app/xml';
 
     /**
      * @var string

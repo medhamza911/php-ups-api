@@ -11,7 +11,8 @@ use Psr\Log\NullLogger;
 use SimpleXMLElement;
 use Ups\Exception\InvalidResponseException;
 use Ups\Exception\RequestException;
-
+use \Illuminate\Support\Facades\Session;
+use \Illuminate\Support\Facades\Config;
 class Request implements RequestInterface, LoggerAwareInterface
 {
     /**
@@ -51,6 +52,41 @@ class Request implements RequestInterface, LoggerAwareInterface
         }
 
         $this->setClient();
+    }
+
+    private function getToken()
+    {
+        if (Session::has('ups_token') && Session::get('ups_token_time') > time()) {
+            return Session::get('ups_token');
+        }
+        $publicKey = Config::get('ups.public_key');
+        $privateKey = Config::get('ups.private_key');
+
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://wwwcie.ups.com/security/v1/oauth/token',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => 'grant_type=client_credentials',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/x-www-form-urlencoded',
+                'Authorization: Basic ' . base64_encode($publicKey . ':' . $privateKey)
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        $response = json_decode($response, true);
+        Session::set('ups_token', $response['access_token']);
+        Session::set('ups_token_time', time() + $response['expires_in'] - 10);
+        return $response['access_token'];
     }
 
     /**
@@ -114,6 +150,7 @@ class Request implements RequestInterface, LoggerAwareInterface
                     'headers' => [
                         'Content-type' => 'application/x-www-form-urlencoded; charset=utf-8',
                         'Accept-Charset' => 'UTF-8',
+                        'Authorization' => 'Bearer ' .  $this->getToken()
                     ],
                     'http_errors' => true,
                 ]
