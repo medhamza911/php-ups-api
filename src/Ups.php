@@ -34,14 +34,14 @@ abstract class Ups implements LoggerAwareInterface
      *
      * @deprecated
      */
-    protected $productionBaseUrl = 'https://onlinetools.ups.com/ups.app/xml';
+    protected $productionBaseUrl = 'https://onlinetools.ups.com/api/ups.app/xml';
 
     /**
      * @var string
      *
      * @deprecated
      */
-    protected $integrationBaseUrl = 'https://wwwcie.ups.com/ups.app/xml';
+    protected $integrationBaseUrl = 'https://wwwcie.ups.com/api/ups.app/xml';
 
     /**
      * @var bool
